@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/types";
 import {
@@ -61,7 +62,14 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
         `}
       >
         <div className="flex items-center justify-between h-16 px-5 border-b border-gray-700">
-          <span className="text-white font-bold text-lg">PPM Dashboard</span>
+          <Image
+            src="/logo-quitus.png"
+            alt="QUITUS Dashboard"
+            width={140}
+            height={40}
+            className="object-contain"
+            priority
+          />
           <button
             onClick={onClose}
             className="lg:hidden text-gray-400 hover:text-white"

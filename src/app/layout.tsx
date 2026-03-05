@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PPM Dashboard",
+  title: "QUITUS Dashboard",
   description: "Tableau de bord de gestion de portefeuille de projets",
 };
 

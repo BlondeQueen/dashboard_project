@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,10 +38,16 @@ export default function LoginPage() {
     <div className="w-full max-w-md">
       <div className="bg-white rounded-2xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4">
-            <LogIn className="w-8 h-8 text-white" />
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo-quitus.png"
+              alt="QUITUS Dashboard"
+              width={180}
+              height={60}
+              className="object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">PPM Dashboard</h1>
           <p className="text-gray-500 mt-1">Connectez-vous à votre compte</p>
         </div>
 

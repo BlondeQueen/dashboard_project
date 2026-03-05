@@ -1,4 +1,4 @@
-# PPM Dashboard
+# QUITUS Dashboard
 
 Tableau de bord de gestion de portefeuille de projets (PPM) — construit avec **Next.js 15** et **Supabase**.
 
