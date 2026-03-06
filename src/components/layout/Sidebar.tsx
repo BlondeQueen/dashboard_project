@@ -4,12 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/types";
-import {
-  LayoutDashboard,
-  FolderKanban,
-  Users,
-  X,
-} from "lucide-react";
+import { LayoutDashboard, FolderKanban, Users, X } from "lucide-react";
 
 interface SidebarProps {
   role: UserRole;
@@ -40,7 +35,6 @@ const navItems = [
 
 export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-
   const filteredItems = navItems.filter((item) => item.roles.includes(role));
 
   return (
@@ -48,7 +42,7 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
@@ -56,29 +50,36 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-gray-900 z-30 transform transition-transform duration-200
+          fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-100 z-30
+          transform transition-transform duration-300 ease-in-out
           lg:relative lg:translate-x-0 lg:flex-shrink-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <div className="flex items-center justify-between h-16 px-5 border-b border-gray-700">
+        {/* Logo */}
+        <div className="flex items-center justify-between h-16 px-5 border-b border-slate-100">
           <Image
             src="/logo-quitus.png"
-            alt="QUITUS Dashboard"
-            width={140}
-            height={40}
+            alt="QUITUS"
+            width={130}
+            height={38}
             className="object-contain"
             priority
           />
           <button
             onClick={onClose}
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="p-4 space-y-1">
+        {/* Nav label */}
+        <div className="px-5 pt-6 pb-2">
+          <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Menu</p>
+        </div>
+
+        <nav className="px-3 space-y-0.5">
           {filteredItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -90,20 +91,34 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                  transition-all duration-150
                   ${
                     isActive
-                      ? "bg-indigo-600 text-white"
-                      : "text-gray-400 hover:text-white hover:bg-gray-800"
+                      ? "bg-emerald-50 text-emerald-700 shadow-sm"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }
                 `}
               >
-                <Icon className="w-5 h-5" />
+                <Icon
+                  className={`w-4.5 h-4.5 flex-shrink-0 ${
+                    isActive ? "text-emerald-600" : "text-slate-400"
+                  }`}
+                  strokeWidth={isActive ? 2.5 : 2}
+                />
                 {item.label}
+                {isActive && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                )}
               </Link>
             );
           })}
         </nav>
+
+        {/* Bottom version tag */}
+        <div className="absolute bottom-6 left-0 right-0 px-5">
+          <p className="text-[10px] text-slate-300 text-center">QUITUS Dashboard v1.0</p>
+        </div>
       </aside>
     </>
   );

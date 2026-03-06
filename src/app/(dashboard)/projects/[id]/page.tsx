@@ -45,72 +45,72 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const role = (profile?.role as UserRole) || "visitor";
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl page-enter">
       <div className="flex items-center gap-4">
         <Link
           href="/projects"
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 flex-1">{p.name}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 flex-1">{p.name}</h1>
         <div className="flex items-center gap-2">
           <StatusBadge status={p.status} />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <div className="bg-white rounded-2xl card-shadow p-6 space-y-5">
         {p.description && (
-          <p className="text-gray-600">{p.description}</p>
+          <p className="text-slate-600 leading-relaxed">{p.description}</p>
         )}
 
         <div>
-          <p className="text-sm font-medium text-gray-500 mb-2">Avancement</p>
+          <p className="text-sm font-semibold text-slate-500 mb-2">Avancement</p>
           <ProgressBar value={p.progress} />
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-gray-500">Type</p>
-            <p className="font-medium text-gray-900">{TYPE_LABELS[p.type]}</p>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Type</p>
+            <p className="font-semibold text-slate-800 mt-0.5">{TYPE_LABELS[p.type]}</p>
           </div>
           <div>
-            <p className="text-gray-500">Responsable</p>
-            <p className="font-medium text-gray-900">
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Responsable</p>
+            <p className="font-semibold text-slate-800 mt-0.5">
               {p.owner?.full_name || p.owner?.email || "—"}
             </p>
           </div>
           {p.start_date && (
             <div>
-              <p className="text-gray-500">Début</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Début</p>
+              <p className="font-semibold text-slate-800 mt-0.5">
                 {new Date(p.start_date).toLocaleDateString("fr-FR")}
               </p>
             </div>
           )}
           {p.end_date && (
             <div>
-              <p className="text-gray-500">Fin prévue</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Fin prévue</p>
+              <p className="font-semibold text-slate-800 mt-0.5">
                 {new Date(p.end_date).toLocaleDateString("fr-FR")}
               </p>
             </div>
           )}
           {p.budget !== null && (
             <div>
-              <p className="text-gray-500">Budget</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Budget</p>
+              <p className="font-semibold text-slate-800 mt-0.5">
                 {p.budget.toLocaleString("fr-FR")} €
               </p>
             </div>
           )}
           {p.budget_consumed !== null && (
             <div>
-              <p className="text-gray-500">Budget consommé</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Budget consommé</p>
+              <p className="font-semibold text-slate-800 mt-0.5">
                 {p.budget_consumed.toLocaleString("fr-FR")} €
                 {p.budget && p.budget > 0 && (
-                  <span className="ml-1 text-gray-400 text-xs">
+                  <span className="ml-1 text-slate-400 text-xs">
                     ({Math.round((p.budget_consumed / p.budget) * 100)}%)
                   </span>
                 )}
@@ -121,12 +121,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
         {membersData && membersData.length > 0 && (
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-2">Membres</p>
+            <p className="text-sm font-semibold text-slate-500 mb-2">Membres</p>
             <div className="flex flex-wrap gap-2">
               {membersData.map((m: any) => (
                 <span
                   key={m.user_id}
-                  className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-700"
+                  className="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-sm text-slate-700 font-medium"
                 >
                   {m.profile?.full_name || m.profile?.email || m.user_id}
                 </span>
@@ -136,10 +136,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         )}
 
         {role === "admin" && (
-          <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
             <Link
               href={`/projects/${p.id}/edit`}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200"
             >
               <Edit className="w-4 h-4" />
               Modifier

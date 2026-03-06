@@ -31,14 +31,14 @@ export default function ProjectFilters() {
           placeholder="Rechercher un projet..."
           defaultValue={search}
           onChange={(e) => updateFilter("search", e.target.value)}
-          className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
         />
       </div>
 
       <select
         value={status}
         onChange={(e) => updateFilter("status", e.target.value)}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
       >
         <option value="">Tous les statuts</option>
         {(Object.keys(STATUS_LABELS) as ProjectStatus[]).map((s) => (
@@ -51,7 +51,7 @@ export default function ProjectFilters() {
       <select
         value={type}
         onChange={(e) => updateFilter("type", e.target.value)}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
       >
         <option value="">Tous les types</option>
         {(Object.keys(TYPE_LABELS) as ProjectType[]).map((t) => (

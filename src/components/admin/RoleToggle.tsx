@@ -31,8 +31,8 @@ export default function RoleToggle({ profile, currentUserId }: RoleToggleProps) 
       onClick={toggle}
       disabled={loading || isSelf}
       className={`
-        relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-        ${role === "admin" ? "bg-indigo-600" : "bg-gray-300"}
+        relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+        ${role === "admin" ? "bg-emerald-500" : "bg-slate-300"}
         ${loading || isSelf ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
       `}
       title={isSelf ? "Vous ne pouvez pas modifier votre propre rôle" : `Passer à ${role === "admin" ? "Visiteur" : "Admin"}`}

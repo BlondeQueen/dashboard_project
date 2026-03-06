@@ -33,40 +33,41 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Gestion des utilisateurs</h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl card-shadow overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 font-medium text-gray-700">
+            <tr className="border-b border-slate-100 bg-slate-50/60">
+              <th className="text-left px-4 py-3 font-semibold text-slate-600">
                 Utilisateur
               </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-700 hidden sm:table-cell">
+              <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">
                 Rôle actuel
               </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-700">
+              <th className="text-left px-4 py-3 font-semibold text-slate-600">
                 Admin
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-50">
             {(profiles as Profile[])?.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50">
+              <tr key={p.id} className="hover:bg-slate-50/60">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-semibold text-slate-800">
                     {p.full_name || "—"}
                   </p>
-                  <p className="text-xs text-gray-400">{p.email}</p>
+                  <p className="text-xs text-slate-400">{p.email}</p>
                 </td>
                 <td className="px-4 py-3 hidden sm:table-cell">
                   <span
-                    className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
+                    className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold ${
                       p.role === "admin"
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-slate-100 text-slate-600"
                     }`}
                   >
+                    <span className={`w-1.5 h-1.5 rounded-full ${p.role === "admin" ? "bg-emerald-500" : "bg-slate-400"}`} />
                     {ROLE_LABELS[p.role]}
                   </span>
                 </td>

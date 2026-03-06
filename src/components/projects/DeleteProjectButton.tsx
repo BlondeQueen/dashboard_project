@@ -19,7 +19,7 @@ export default function DeleteProjectButton({
   return (
     <button
       onClick={handleDelete}
-      className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+      className="flex items-center gap-2 px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all text-sm font-semibold"
     >
       <Trash2 className="w-4 h-4" />
       Supprimer

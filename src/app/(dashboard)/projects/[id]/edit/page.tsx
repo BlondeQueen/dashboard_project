@@ -38,15 +38,15 @@ export default async function EditProjectPage({ params }: PageProps) {
   const action = updateProject.bind(null, id);
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl page-enter">
       <div className="flex items-center gap-4">
-        <Link href={`/projects/${id}`} className="text-gray-400 hover:text-gray-600">
+        <Link href={`/projects/${id}`} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Modifier le projet</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Modifier le projet</h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl card-shadow p-6">
         <ProjectForm
           action={action}
           initialData={project}

@@ -6,6 +6,16 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Link from "next/link";
 import { Project, ProjectStatus, ProjectType } from "@/types";
+import { ArrowRight } from "lucide-react";
+
+function formatDate() {
+  return new Date().toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -17,10 +27,10 @@ export default async function DashboardPage() {
   const all = (projects as Project[]) || [];
 
   const kpi = {
-    total: all.length,
+    total:       all.length,
     in_progress: all.filter((p) => p.status === "in_progress").length,
-    completed: all.filter((p) => p.status === "completed").length,
-    delayed: all.filter((p) => p.status === "delayed").length,
+    completed:   all.filter((p) => p.status === "completed").length,
+    delayed:     all.filter((p) => p.status === "delayed").length,
   };
 
   const statuses: ProjectStatus[] = ["planned", "in_progress", "completed", "delayed"];
@@ -38,47 +48,57 @@ export default async function DashboardPage() {
   const recent = all.slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+    <div className="space-y-8 page-enter">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Tableau de bord</h1>
+          <p className="mt-1 text-sm text-slate-500 capitalize">{formatDate()}</p>
+        </div>
+      </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger">
         <KpiCard
           title="Total projets"
           value={kpi.total}
           description="Tous statuts confondus"
-          color="indigo"
+          color="emerald"
+          icon="layers"
         />
         <KpiCard
           title="En cours"
           value={kpi.in_progress}
           description="Projets actifs"
-          color="yellow"
+          color="amber"
+          icon="trending-up"
         />
         <KpiCard
           title="Terminés"
           value={kpi.completed}
           description="Projets clôturés"
-          color="green"
+          color="teal"
+          icon="check-circle"
         />
         <KpiCard
           title="En retard"
           value={kpi.delayed}
           description="Nécessitent une attention"
-          color="red"
+          color="rose"
+          icon="alert-triangle"
         />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-2xl card-shadow p-6">
+          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-5">
             Répartition par statut
           </h2>
           <StatusBarChart data={statusData} />
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-2xl card-shadow p-6">
+          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-5">
             Répartition par type
           </h2>
           <TypePieChart data={typeData} />
@@ -86,21 +106,22 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent projects */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">
+      <div className="bg-white rounded-2xl card-shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
             Projets récents
           </h2>
           <Link
             href="/projects"
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            className="inline-flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
           >
-            Voir tous →
+            Voir tous
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-slate-50">
           {recent.length === 0 && (
-            <p className="px-6 py-8 text-center text-gray-400 text-sm">
+            <p className="px-6 py-10 text-center text-slate-400 text-sm">
               Aucun projet pour le moment
             </p>
           )}
@@ -108,10 +129,12 @@ export default async function DashboardPage() {
             <Link
               key={p.id}
               href={`/projects/${p.id}`}
-              className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/60 transition-colors group"
             >
+              {/* Color dot */}
+              <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-emerald-700 transition-colors">
                   {p.name}
                 </p>
               </div>

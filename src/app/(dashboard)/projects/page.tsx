@@ -53,11 +53,11 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Projets</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Projets</h1>
         {role === "admin" && (
           <Link
             href="/projects/new"
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-200"
           >
             <Plus className="w-4 h-4" />
             Nouveau projet
@@ -65,51 +65,51 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="p-4 border-b border-gray-200">
+      <div className="bg-white rounded-2xl card-shadow">
+        <div className="p-4 border-b border-slate-100">
           <ProjectFilters />
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-700">
+              <tr className="border-b border-slate-100 bg-slate-50/60">
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">
                   Nom
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden sm:table-cell">
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">
                   Statut
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden md:table-cell">
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">
                   Avancement
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden lg:table-cell">
                   Responsable
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-50">
               {all.length === 0 && (
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-4 py-8 text-center text-gray-400"
+                    className="px-4 py-10 text-center text-slate-400"
                   >
                     Aucun projet trouvé
                   </td>
                 </tr>
               )}
               {all.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="px-4 py-3">
                     <Link
                       href={`/projects/${p.id}`}
-                      className="font-medium text-gray-900 hover:text-indigo-600 transition-colors"
+                      className="font-semibold text-slate-800 hover:text-emerald-600 transition-colors"
                     >
                       {p.name}
                     </Link>
                     {p.description && (
-                      <p className="text-xs text-gray-400 mt-0.5 truncate max-w-xs">
+                      <p className="text-xs text-slate-400 mt-0.5 truncate max-w-xs">
                         {p.description}
                       </p>
                     )}
@@ -120,7 +120,7 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
                   <td className="px-4 py-3 hidden md:table-cell w-40">
                     <ProgressBar value={p.progress} />
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-gray-500">
+                  <td className="px-4 py-3 hidden lg:table-cell text-slate-500">
                     {p.owner?.full_name || p.owner?.email || "—"}
                   </td>
                 </tr>
