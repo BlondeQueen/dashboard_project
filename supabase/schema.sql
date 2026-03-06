@@ -1,65 +1,73 @@
 -- =============================================
--- PPM Dashboard - Supabase Schema
+-- PPM Dashboard - Supabase Schema (Version fusionnée & optimisée)
+-- À exécuter dans Supabase Dashboard > SQL Editor
 -- =============================================
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- =============================================
+-- EXTENSIONS
+-- =============================================
+-- gen_random_uuid() est natif en PostgreSQL 14+, pas besoin d'extension uuid-ossp
+-- On garde uuid-ossp uniquement si la version Supabase est ancienne
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =============================================
 -- TABLE: profiles
 -- =============================================
-CREATE TABLE IF NOT EXISTS profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
-  full_name TEXT,
-  role TEXT NOT NULL DEFAULT 'visitor' CHECK (role IN ('admin', 'visitor')),
-  created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id          UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email       TEXT NOT NULL,
+  full_name   TEXT,
+  role        TEXT NOT NULL DEFAULT 'visitor'
+              CHECK (role IN ('admin', 'visitor')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- =============================================
 -- TABLE: projects
 -- =============================================
-CREATE TABLE IF NOT EXISTS projects (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'planned'
-    CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed')),
-  type TEXT NOT NULL DEFAULT 'other'
-    CHECK (type IN ('infrastructure', 'software', 'research', 'other')),
-  progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
-  budget DECIMAL(15, 2),
-  budget_consumed DECIMAL(15, 2),
-  start_date DATE,
-  end_date DATE,
-  owner_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS public.projects (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name             TEXT NOT NULL,
+  description      TEXT,
+  status           TEXT NOT NULL DEFAULT 'planned'
+                   CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed')),
+  type             TEXT NOT NULL DEFAULT 'other'
+                   CHECK (type IN ('infrastructure', 'software', 'research', 'other')),
+  progress         INTEGER NOT NULL DEFAULT 0
+                   CHECK (progress >= 0 AND progress <= 100),
+  budget           NUMERIC(15, 2),
+  budget_consumed  NUMERIC(15, 2),
+  start_date       DATE,
+  end_date         DATE,
+  owner_id         UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- =============================================
 -- TABLE: project_members
 -- =============================================
-CREATE TABLE IF NOT EXISTS project_members (
-  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS public.project_members (
+  project_id  UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  user_id     UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   PRIMARY KEY (project_id, user_id)
 );
 
 -- =============================================
--- TRIGGER: auto-create profile on signup
+-- TRIGGER 1: auto-créer un profil à l'inscription
 -- =============================================
-CREATE OR REPLACE FUNCTION handle_new_user()
+CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, email, full_name, role)
+  INSERT INTO public.profiles (id, email, full_name, role)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    -- Utilise full_name si fourni, sinon extrait la partie avant @ de l'email
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     'visitor'
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (id) DO NOTHING; -- Évite les doublons en cas de rejeu
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -67,12 +75,12 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- =============================================
--- TRIGGER: auto-update updated_at on projects
+-- TRIGGER 2: auto-mettre à jour updated_at sur projects
 -- =============================================
-CREATE OR REPLACE FUNCTION update_updated_at()
+CREATE OR REPLACE FUNCTION public.update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();
@@ -80,46 +88,105 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS set_updated_at ON projects;
+DROP TRIGGER IF EXISTS set_updated_at ON public.projects;
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON projects
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.projects
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
 -- =============================================
--- ROW LEVEL SECURITY
+-- ROW LEVEL SECURITY (RLS)
 -- =============================================
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE project_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.projects       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_members ENABLE ROW LEVEL SECURITY;
 
--- Profiles: everyone can read, only self or admin can update
-CREATE POLICY "profiles_select" ON profiles FOR SELECT TO authenticated USING (true);
-CREATE POLICY "profiles_update_self" ON profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
+-- ----------------------------
+-- Policies: profiles
+-- ----------------------------
 
--- Projects: authenticated users can read
-CREATE POLICY "projects_select" ON projects FOR SELECT TO authenticated USING (true);
+-- Tout utilisateur connecté peut lire les profils
+CREATE POLICY "profiles_select"
+  ON public.profiles FOR SELECT
+  TO authenticated
+  USING (true);
 
--- Projects: only admins can insert/update/delete
-CREATE POLICY "projects_insert_admin" ON projects FOR INSERT TO authenticated
+-- Un utilisateur peut modifier son propre profil
+CREATE POLICY "profiles_update_self"
+  ON public.profiles FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = id);
+
+-- Un admin peut modifier n'importe quel profil
+CREATE POLICY "profiles_update_admin"
+  ON public.profiles FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- ----------------------------
+-- Policies: projects
+-- ----------------------------
+
+-- Tout utilisateur connecté peut lire les projets
+CREATE POLICY "projects_select"
+  ON public.projects FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Seuls les admins peuvent créer un projet
+CREATE POLICY "projects_insert_admin"
+  ON public.projects FOR INSERT
+  TO authenticated
   WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-CREATE POLICY "projects_update_admin" ON projects FOR UPDATE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-CREATE POLICY "projects_delete_admin" ON projects FOR DELETE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
--- Project members: authenticated can read
-CREATE POLICY "project_members_select" ON project_members FOR SELECT TO authenticated USING (true);
-CREATE POLICY "project_members_insert_admin" ON project_members FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-CREATE POLICY "project_members_delete_admin" ON project_members FOR DELETE TO authenticated
+-- Seuls les admins peuvent modifier un projet
+CREATE POLICY "projects_update_admin"
+  ON public.projects FOR UPDATE
+  TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
+
+-- Seuls les admins peuvent supprimer un projet
+CREATE POLICY "projects_delete_admin"
+  ON public.projects FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- ----------------------------
+-- Policies: project_members
+-- ----------------------------
+
+-- Tout utilisateur connecté peut voir les membres
+CREATE POLICY "project_members_select"
+  ON public.project_members FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Seuls les admins peuvent ajouter des membres
+CREATE POLICY "project_members_insert_admin"
+  ON public.project_members FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- Seuls les admins peuvent supprimer des membres
+CREATE POLICY "project_members_delete_admin"
+  ON public.project_members FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- =============================================
+-- INITIALISATION: Passer un compte en admin
+-- =============================================
+-- Après avoir créé votre premier compte via Supabase Auth,
+-- exécutez cette ligne en remplaçant l'email :
+-- UPDATE public.profiles SET role = 'admin' WHERE email = 'votre@email.com';
