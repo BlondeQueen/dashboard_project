@@ -6,6 +6,7 @@ import ProjectFilters from "@/components/projects/ProjectFilters";
 import { Project, UserRole } from "@/types";
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
+import { getCurrentProfile } from "@/utils/get-user";
 
 interface PageProps {
   searchParams: Promise<{
@@ -18,18 +19,8 @@ interface PageProps {
 async function ProjectsContent({ searchParams }: { searchParams: { search?: string; status?: string; type?: string } }) {
   const supabase = await createClient();
 
-  // Get current user role
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
+  // profile is deduplicated via React cache() — no extra round-trip
+  const profile = await getCurrentProfile();
   const role = (profile?.role as UserRole) || "visitor";
 
   let query = supabase

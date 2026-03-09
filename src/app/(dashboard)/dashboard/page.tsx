@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import KpiCard from "@/components/ui/KpiCard";
-import StatusBarChart from "@/components/charts/StatusBarChart";
-import TypePieChart from "@/components/charts/TypePieChart";
+import ChartsSection from "@/components/charts/ChartsSection";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Link from "next/link";
@@ -90,20 +89,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl card-shadow p-6">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-5">
-            Répartition par statut
-          </h2>
-          <StatusBarChart data={statusData} />
-        </div>
-        <div className="bg-white rounded-2xl card-shadow p-6">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-5">
-            Répartition par type
-          </h2>
-          <TypePieChart data={typeData} />
-        </div>
-      </div>
+      <ChartsSection statusData={statusData} typeData={typeData} />
 
       {/* Recent projects */}
       <div className="bg-white rounded-2xl card-shadow overflow-hidden">

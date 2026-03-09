@@ -6,6 +6,7 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import DeleteProjectButton from "@/components/projects/DeleteProjectButton";
 import { Project, UserRole, TYPE_LABELS } from "@/types";
 import { ArrowLeft, Edit } from "lucide-react";
+import { getCurrentProfile } from "@/utils/get-user";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,7 +16,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: project }, { data: membersData }] = await Promise.all([
+  // All 3 fetches run in parallel: project data + members + current user profile
+  const [{ data: project }, { data: membersData }, profile] = await Promise.all([
     supabase
       .from("projects")
       .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at)")
@@ -25,23 +27,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       .from("project_members")
       .select("user_id, profile:profiles(id, full_name, email, role, created_at)")
       .eq("project_id", id),
+    getCurrentProfile(),
   ]);
 
   if (!project) notFound();
 
   const p = project as Project;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
   const role = (profile?.role as UserRole) || "visitor";
 
   return (

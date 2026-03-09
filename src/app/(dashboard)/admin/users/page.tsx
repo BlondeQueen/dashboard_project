@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import RoleToggle from "@/components/admin/RoleToggle";
 import { Profile, UserRole } from "@/types";
+import { getCurrentUser, getCurrentProfile } from "@/utils/get-user";
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrateur",
@@ -9,22 +10,15 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export default async function AdminUsersPage() {
-  const supabase = await createClient();
+  // Parallel: current user identity + all profiles list
+  const [user, currentProfile, supabase] = await Promise.all([
+    getCurrentUser(),
+    getCurrentProfile(),
+    createClient(),
+  ]);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  const { data: currentProfile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (!currentProfile || currentProfile.role !== "admin") {
-    redirect("/dashboard");
-  }
+  if (!currentProfile || currentProfile.role !== "admin") redirect("/dashboard");
 
   const { data: profiles } = await supabase
     .from("profiles")
