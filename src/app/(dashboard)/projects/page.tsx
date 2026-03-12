@@ -34,6 +34,7 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
     .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at), responsable:responsables!projects_responsable_id_fkey(id, full_name, email, poste)")
     .order("created_at", { ascending: false });
 
+
   if (searchParams.search) {
     query = query.ilike("name", `%${searchParams.search}%`);
   }
@@ -47,7 +48,8 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
     query = query.eq("responsable_id", searchParams.owner_id);
   }
 
-  const { data: projects } = await query;
+  const { data: projects, error: projectsError } = await query;
+  if (projectsError) console.error("[projects] fetch error:", projectsError.message);
   const all = (projects as Project[]) || [];
 
   return (

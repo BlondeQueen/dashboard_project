@@ -59,6 +59,7 @@ export async function createProject(formData: FormData): Promise<void> {
       start_date,
       end_date,
       owner_id,
+      responsable_id,
       github_url,
       gitlab_url,
       app_url,
