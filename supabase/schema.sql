@@ -116,18 +116,21 @@ ALTER TABLE public.project_members ENABLE ROW LEVEL SECURITY;
 -- ----------------------------
 
 -- Tout utilisateur connecté peut lire les profils
+DROP POLICY IF EXISTS "profiles_select" ON public.profiles;
 CREATE POLICY "profiles_select"
   ON public.profiles FOR SELECT
   TO authenticated
   USING (true);
 
 -- Un utilisateur peut modifier son propre profil
+DROP POLICY IF EXISTS "profiles_update_self" ON public.profiles;
 CREATE POLICY "profiles_update_self"
   ON public.profiles FOR UPDATE
   TO authenticated
   USING (auth.uid() = id);
 
 -- Un admin peut modifier n'importe quel profil
+DROP POLICY IF EXISTS "profiles_update_admin" ON public.profiles;
 CREATE POLICY "profiles_update_admin"
   ON public.profiles FOR UPDATE
   TO authenticated
@@ -140,12 +143,14 @@ CREATE POLICY "profiles_update_admin"
 -- ----------------------------
 
 -- Tout utilisateur connecté peut lire les projets
+DROP POLICY IF EXISTS "projects_select" ON public.projects;
 CREATE POLICY "projects_select"
   ON public.projects FOR SELECT
   TO authenticated
   USING (true);
 
 -- Seuls les admins peuvent créer un projet
+DROP POLICY IF EXISTS "projects_insert_admin" ON public.projects;
 CREATE POLICY "projects_insert_admin"
   ON public.projects FOR INSERT
   TO authenticated
@@ -154,6 +159,7 @@ CREATE POLICY "projects_insert_admin"
   );
 
 -- Seuls les admins peuvent modifier un projet
+DROP POLICY IF EXISTS "projects_update_admin" ON public.projects;
 CREATE POLICY "projects_update_admin"
   ON public.projects FOR UPDATE
   TO authenticated
@@ -162,6 +168,7 @@ CREATE POLICY "projects_update_admin"
   );
 
 -- Seuls les admins peuvent supprimer un projet
+DROP POLICY IF EXISTS "projects_delete_admin" ON public.projects;
 CREATE POLICY "projects_delete_admin"
   ON public.projects FOR DELETE
   TO authenticated
@@ -174,12 +181,14 @@ CREATE POLICY "projects_delete_admin"
 -- ----------------------------
 
 -- Tout utilisateur connecté peut voir les membres
+DROP POLICY IF EXISTS "project_members_select" ON public.project_members;
 CREATE POLICY "project_members_select"
   ON public.project_members FOR SELECT
   TO authenticated
   USING (true);
 
 -- Seuls les admins peuvent ajouter des membres
+DROP POLICY IF EXISTS "project_members_insert_admin" ON public.project_members;
 CREATE POLICY "project_members_insert_admin"
   ON public.project_members FOR INSERT
   TO authenticated
@@ -188,6 +197,7 @@ CREATE POLICY "project_members_insert_admin"
   );
 
 -- Seuls les admins peuvent supprimer des membres
+DROP POLICY IF EXISTS "project_members_delete_admin" ON public.project_members;
 CREATE POLICY "project_members_delete_admin"
   ON public.project_members FOR DELETE
   TO authenticated
@@ -214,41 +224,15 @@ CREATE INDEX IF NOT EXISTS idx_activity_logs_project
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 
 -- Tout utilisateur connecté peut lire les logs
+DROP POLICY IF EXISTS "activity_logs_select" ON public.activity_logs;
 CREATE POLICY "activity_logs_select"
   ON public.activity_logs FOR SELECT
   TO authenticated
   USING (true);
 
 -- Un utilisateur connecté peut insérer ses propres logs (ou logs système sans user)
+DROP POLICY IF EXISTS "activity_logs_insert" ON public.activity_logs;
 CREATE POLICY "activity_logs_insert"
   ON public.activity_logs FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
-
--- =============================================
--- MIGRATION: Ajouter 'suspended' au statut et nouveaux types (si table déjà existante)
--- À exécuter dans Supabase Dashboard > SQL Editor
--- =============================================
--- ALTER TABLE public.projects
---   DROP CONSTRAINT IF EXISTS projects_status_check;
--- ALTER TABLE public.projects
---   ADD CONSTRAINT projects_status_check
---   CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed', 'suspended'));
-
--- -- Mettre à jour le type vers les nouvelles valeurs
--- ALTER TABLE public.projects
---   DROP CONSTRAINT IF EXISTS projects_type_check;
--- ALTER TABLE public.projects
---   ADD CONSTRAINT projects_type_check
---   CHECK (type IN ('web', 'mobile', 'web_mobile'));
--- -- Migrer les anciennes valeurs :
--- UPDATE public.projects SET type = 'web'        WHERE type IN ('software', 'infrastructure');
--- UPDATE public.projects SET type = 'mobile'     WHERE type = 'research';
--- UPDATE public.projects SET type = 'web_mobile' WHERE type = 'other';
-
--- =============================================
--- INITIALISATION: Passer un compte en admin
--- =============================================
--- Après avoir créé votre premier compte via Supabase Auth,
--- exécutez cette ligne en remplaçant l'email :
--- UPDATE public.profiles SET role = 'admin' WHERE email = 'votre@email.com';
