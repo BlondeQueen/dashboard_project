@@ -6,6 +6,8 @@ import { updateResponsable } from "@/app/actions/responsables";
 import { getCurrentProfile } from "@/utils/get-user";
 import { Responsable } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

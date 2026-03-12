@@ -9,6 +9,8 @@ import { Project, UserRole, TYPE_LABELS, ActivityLog } from "@/types";
 import { ArrowLeft, Edit, Github, Globe, Calendar, User, Layers } from "lucide-react";
 import { getCurrentProfile } from "@/utils/get-user";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

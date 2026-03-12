@@ -5,6 +5,8 @@ import ProjectForm from "@/components/projects/ProjectForm";
 import { createProject } from "@/app/actions/projects";
 import { ArrowLeft } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewProjectPage() {
   const supabase = await createClient();
 

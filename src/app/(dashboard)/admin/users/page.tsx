@@ -6,6 +6,8 @@ import { Profile, UserRole } from "@/types";
 import { getCurrentUser, getCurrentProfile } from "@/utils/get-user";
 import { Users, ShieldCheck, Eye } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrateur",
   visitor: "Visiteur",

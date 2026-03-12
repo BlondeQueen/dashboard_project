@@ -7,6 +7,8 @@ import { Plus, FolderOpen } from "lucide-react";
 import { Suspense } from "react";
 import { getCurrentProfile } from "@/utils/get-user";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   searchParams: Promise<{
     search?: string;

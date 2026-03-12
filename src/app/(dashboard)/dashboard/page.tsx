@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Project, ProjectStatus } from "@/types";
 import { ArrowRight, Calendar, User } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 function formatDate() {
   return new Date().toLocaleDateString("fr-FR", {
     weekday: "long",

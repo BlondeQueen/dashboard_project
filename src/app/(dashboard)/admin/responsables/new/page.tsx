@@ -4,6 +4,8 @@ import { createResponsable } from "@/app/actions/responsables";
 import { getCurrentProfile } from "@/utils/get-user";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewResponsablePage() {
   const profile = await getCurrentProfile();
   if (!profile || profile.role !== "admin") redirect("/dashboard");
