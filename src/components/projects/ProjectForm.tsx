@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Profile, Project, ProjectStatus, ProjectType, STATUS_LABELS, TYPE_LABELS } from "@/types";
+import { Responsable, Project, ProjectStatus, ProjectType, STATUS_LABELS, TYPE_LABELS } from "@/types";
 
 interface ProjectFormProps {
   action: (formData: FormData) => Promise<void>;
   initialData?: Project;
-  profiles: Profile[];
+  responsables: Responsable[];
 }
 
 export default function ProjectForm({
   action,
   initialData,
-  profiles,
+  responsables,
 }: ProjectFormProps) {
   const [progress, setProgress] = useState(initialData?.progress ?? 0);
 
@@ -222,23 +222,29 @@ export default function ProjectForm({
         </div>
       </div>
 
-      {/* Owner */}
+      {/* Responsable */}
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-          Responsable
+          Chef de projet / Responsable
         </label>
         <select
-          name="owner_id"
-          defaultValue={initialData?.owner_id ?? ""}
+          name="responsable_id"
+          defaultValue={initialData?.responsable_id ?? ""}
           className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
         >
           <option value="">— Aucun —</option>
-          {profiles.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.full_name || p.email}
+          {responsables.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.full_name}{r.poste ? ` — ${r.poste}` : ""}
             </option>
           ))}
         </select>
+        {responsables.length === 0 && (
+          <p className="mt-1.5 text-xs text-amber-600">
+            Aucun responsable enregistré.{" "}
+            <a href="/admin/responsables/new" className="underline font-medium">Ajouter un responsable</a>
+          </p>
+        )}
       </div>
 
       <div>

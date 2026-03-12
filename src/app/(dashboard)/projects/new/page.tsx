@@ -21,7 +21,7 @@ export default async function NewProjectPage() {
 
   if (!profile || profile.role !== "admin") redirect("/projects");
 
-  const { data: profiles } = await supabase.from("profiles").select("*");
+  const { data: responsables } = await supabase.from("responsables").select("*").order("full_name");
 
   return (
     <div className="space-y-6 max-w-2xl page-enter">
@@ -33,7 +33,7 @@ export default async function NewProjectPage() {
       </div>
 
       <div className="bg-white rounded-2xl card-shadow p-6">
-        <ProjectForm action={createProject} profiles={profiles || []} />
+        <ProjectForm action={createProject} responsables={responsables || []} />
       </div>
     </div>
   );

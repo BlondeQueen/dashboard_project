@@ -40,6 +40,7 @@ export async function createProject(formData: FormData): Promise<void> {
   const start_date = (formData.get("start_date") as string) || null;
   const end_date = (formData.get("end_date") as string) || null;
   const owner_id = (formData.get("owner_id") as string) || user.id;
+  const responsable_id = (formData.get("responsable_id") as string) || null;
   const github_url = (formData.get("github_url") as string) || null;
   const gitlab_url = (formData.get("gitlab_url") as string) || null;
   const app_url = (formData.get("app_url") as string) || null;
@@ -103,6 +104,7 @@ export async function updateProject(
   const start_date = (formData.get("start_date") as string) || null;
   const end_date = (formData.get("end_date") as string) || null;
   const owner_id = (formData.get("owner_id") as string) || null;
+  const responsable_id = (formData.get("responsable_id") as string) || null;
   const github_url = (formData.get("github_url") as string) || null;
   const gitlab_url = (formData.get("gitlab_url") as string) || null;
   const app_url = (formData.get("app_url") as string) || null;
@@ -121,6 +123,7 @@ export async function updateProject(
       start_date,
       end_date,
       owner_id,
+      responsable_id,
       github_url,
       gitlab_url,
       app_url,

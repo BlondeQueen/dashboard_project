@@ -23,6 +23,43 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- =============================================
+-- TABLE: responsables
+-- =============================================
+CREATE TABLE IF NOT EXISTS public.responsables (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name  TEXT NOT NULL,
+  email      TEXT,
+  poste      TEXT,
+  phone      TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.responsables ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "responsables_select" ON public.responsables;
+CREATE POLICY "responsables_select"
+  ON public.responsables FOR SELECT
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "responsables_insert_admin" ON public.responsables;
+CREATE POLICY "responsables_insert_admin"
+  ON public.responsables FOR INSERT
+  TO authenticated
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "responsables_update_admin" ON public.responsables;
+CREATE POLICY "responsables_update_admin"
+  ON public.responsables FOR UPDATE
+  TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "responsables_delete_admin" ON public.responsables;
+CREATE POLICY "responsables_delete_admin"
+  ON public.responsables FOR DELETE
+  TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- =============================================
 -- TABLE: projects
 -- =============================================
 CREATE TABLE IF NOT EXISTS public.projects (
@@ -40,6 +77,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
   start_date       DATE,
   end_date         DATE,
   owner_id         UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  responsable_id   UUID REFERENCES public.responsables(id) ON DELETE SET NULL,
   github_url       TEXT,
   gitlab_url       TEXT,
   app_url          TEXT,

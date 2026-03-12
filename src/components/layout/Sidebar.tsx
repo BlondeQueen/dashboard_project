@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/types";
-import { LayoutDashboard, FolderKanban, Users, X } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Users, UserCircle, X } from "lucide-react";
 
 interface SidebarProps {
   role: UserRole;
@@ -29,6 +29,12 @@ const navItems = [
     href: "/admin/users",
     label: "Utilisateurs",
     icon: Users,
+    roles: ["admin"] as UserRole[],
+  },
+  {
+    href: "/admin/responsables",
+    label: "Responsables",
+    icon: UserCircle,
     roles: ["admin"] as UserRole[],
   },
 ];

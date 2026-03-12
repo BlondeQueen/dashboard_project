@@ -14,6 +14,15 @@ export interface Profile {
   created_at: string;
 }
 
+export interface Responsable {
+  id: string;
+  full_name: string;
+  email: string | null;
+  poste: string | null;
+  phone: string | null;
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -26,12 +35,14 @@ export interface Project {
   start_date: string | null;
   end_date: string | null;
   owner_id: string | null;
+  responsable_id: string | null;
   github_url: string | null;
   gitlab_url: string | null;
   app_url: string | null;
   created_at: string;
   updated_at: string;
   owner?: Profile | null;
+  responsable?: Responsable | null;
 }
 
 export interface ProjectMember {

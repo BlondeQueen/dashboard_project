@@ -22,16 +22,16 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
   const profile = await getCurrentProfile();
   const role = (profile?.role as UserRole) || "visitor";
 
-  // Fetch owners for the filter dropdown
+  // Fetch responsables for the filter dropdown
   const { data: ownersRaw } = await supabase
-    .from("profiles")
+    .from("responsables")
     .select("id, full_name, email")
     .order("full_name");
   const owners = (ownersRaw || []) as { id: string; full_name: string | null; email: string }[];
 
   let query = supabase
     .from("projects")
-    .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at)")
+    .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at), responsable:responsables!projects_responsable_id_fkey(id, full_name, email, poste)")
     .order("created_at", { ascending: false });
 
   if (searchParams.search) {
@@ -44,7 +44,7 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
     query = query.eq("type", searchParams.type);
   }
   if (searchParams.owner_id) {
-    query = query.eq("owner_id", searchParams.owner_id);
+    query = query.eq("responsable_id", searchParams.owner_id);
   }
 
   const { data: projects } = await query;

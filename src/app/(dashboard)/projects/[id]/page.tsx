@@ -20,7 +20,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const [{ data: project }, { data: membersData }, { data: logsData }, profile] = await Promise.all([
     supabase
       .from("projects")
-      .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at)")
+      .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at), responsable:responsables!projects_responsable_id_fkey(id, full_name, email, poste, phone)")
       .eq("id", id)
       .single(),
     supabase
@@ -154,8 +154,14 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 <div>
                   <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-0.5">Chef de projet</p>
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    {p.owner?.full_name || p.owner?.email || "—"}
+                    {(p as any).responsable?.full_name || "—"}
                   </p>
+                  {(p as any).responsable?.poste && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{(p as any).responsable.poste}</p>
+                  )}
+                  {(p as any).responsable?.phone && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{(p as any).responsable.phone}</p>
+                  )}
                 </div>
               </div>
 

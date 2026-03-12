@@ -28,9 +28,9 @@ export default async function EditProjectPage({ params }: PageProps) {
 
   if (!profile || profile.role !== "admin") redirect("/projects");
 
-  const [{ data: project }, { data: profiles }] = await Promise.all([
+  const [{ data: project }, { data: responsables }] = await Promise.all([
     supabase.from("projects").select("*").eq("id", id).single(),
-    supabase.from("profiles").select("*"),
+    supabase.from("responsables").select("*").order("full_name"),
   ]);
 
   if (!project) notFound();
@@ -50,7 +50,7 @@ export default async function EditProjectPage({ params }: PageProps) {
         <ProjectForm
           action={action}
           initialData={project}
-          profiles={profiles || []}
+          responsables={responsables || []}
         />
       </div>
     </div>

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: projects } = await supabase
     .from("projects")
-    .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at)")
+    .select("*, owner:profiles!projects_owner_id_fkey(id, full_name, email, role, created_at), responsable:responsables!projects_responsable_id_fkey(id, full_name, email, poste)")
     .order("updated_at", { ascending: false });
 
   const all = (projects as Project[]) || [];
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
               <div className="flex items-center gap-1.5 min-w-0">
                 <User className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                 <span className="text-sm text-slate-600 dark:text-slate-300 truncate">
-                  {(p as any).owner?.full_name || (p as any).owner?.email || "—"}
+                  {(p as any).responsable?.full_name || "—"}
                 </span>
               </div>
 

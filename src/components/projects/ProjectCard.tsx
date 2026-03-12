@@ -59,12 +59,12 @@ export default function ProjectCard({ project: p }: ProjectCardProps) {
           </span>
 
           <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
-            {/* Owner */}
-            {p.owner && (
+            {/* Responsable */}
+            {(p as any).responsable && (
               <span className="flex items-center gap-1">
                 <User className="w-3 h-3" />
                 <span className="hidden sm:inline truncate max-w-[80px]">
-                  {p.owner.full_name?.split(" ")[0] || p.owner.email}
+                  {(p as any).responsable.full_name?.split(" ")[0] || "—"}
                 </span>
               </span>
             )}
