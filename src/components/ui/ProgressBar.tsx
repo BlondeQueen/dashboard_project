@@ -15,13 +15,13 @@ export default function ProgressBar({ value }: ProgressBarProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+      <div className="flex-1 bg-slate-100 dark:bg-slate-700/60 rounded-full h-1.5 overflow-hidden">
         <div
           className={`h-1.5 rounded-full ${color} transition-all duration-700`}
           style={{ width: `${safeValue}%` }}
         />
       </div>
-      <span className="text-xs font-medium text-slate-500 w-9 text-right tabular-nums">{safeValue}%</span>
+      <span className="text-xs font-medium text-slate-500 dark:text-slate-400 w-9 text-right tabular-nums">{safeValue}%</span>
     </div>
   );
 }

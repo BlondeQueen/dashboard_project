@@ -40,6 +40,9 @@ export async function createProject(formData: FormData): Promise<void> {
   const start_date = (formData.get("start_date") as string) || null;
   const end_date = (formData.get("end_date") as string) || null;
   const owner_id = (formData.get("owner_id") as string) || user.id;
+  const github_url = (formData.get("github_url") as string) || null;
+  const gitlab_url = (formData.get("gitlab_url") as string) || null;
+  const app_url = (formData.get("app_url") as string) || null;
   const memberIds = formData.getAll("members") as string[];
 
   const { data: project, error } = await supabase
@@ -55,6 +58,9 @@ export async function createProject(formData: FormData): Promise<void> {
       start_date,
       end_date,
       owner_id,
+      github_url,
+      gitlab_url,
+      app_url,
     })
     .select()
     .single();
@@ -97,6 +103,9 @@ export async function updateProject(
   const start_date = (formData.get("start_date") as string) || null;
   const end_date = (formData.get("end_date") as string) || null;
   const owner_id = (formData.get("owner_id") as string) || null;
+  const github_url = (formData.get("github_url") as string) || null;
+  const gitlab_url = (formData.get("gitlab_url") as string) || null;
+  const app_url = (formData.get("app_url") as string) || null;
   const memberIds = formData.getAll("members") as string[];
 
   const { error } = await supabase
@@ -112,11 +121,26 @@ export async function updateProject(
       start_date,
       end_date,
       owner_id,
+      github_url,
+      gitlab_url,
+      app_url,
     })
     .eq("id", id);
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  // Auto-log the update (best-effort, no await needed for UX)
+  try {
+    await supabase.from("activity_logs").insert({
+      project_id: id,
+      user_id: (await supabase.auth.getUser()).data.user?.id ?? null,
+      action: "updated",
+      detail: `Statut: ${status} · Avancement: ${progress}%`,
+    });
+  } catch {
+    // non-blocking
   }
 
   // Replace members

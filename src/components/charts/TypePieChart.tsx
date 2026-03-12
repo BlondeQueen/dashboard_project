@@ -11,10 +11,9 @@ import {
 import { ProjectType, TYPE_LABELS } from "@/types";
 
 const TYPE_COLORS: Record<ProjectType, string> = {
-  infrastructure: "#059669",
-  software:       "#0ea5e9",
-  research:       "#f59e0b",
-  other:          "#94a3b8",
+  web:        "#059669",
+  mobile:     "#0ea5e9",
+  web_mobile: "#f59e0b",
 };
 
 interface TypePieChartProps {

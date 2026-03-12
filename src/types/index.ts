@@ -1,8 +1,10 @@
 export type UserRole = "admin" | "visitor";
 
-export type ProjectStatus = "planned" | "in_progress" | "completed" | "delayed";
+export type ProjectStatus = "planned" | "in_progress" | "completed" | "delayed" | "suspended";
 
-export type ProjectType = "infrastructure" | "software" | "research" | "other";
+export type ProjectType = "web" | "mobile" | "web_mobile";
+
+export type ActivityAction = "created" | "updated" | "status_change" | "comment";
 
 export interface Profile {
   id: string;
@@ -24,6 +26,9 @@ export interface Project {
   start_date: string | null;
   end_date: string | null;
   owner_id: string | null;
+  github_url: string | null;
+  gitlab_url: string | null;
+  app_url: string | null;
   created_at: string;
   updated_at: string;
   owner?: Profile | null;
@@ -35,6 +40,16 @@ export interface ProjectMember {
   profile?: Profile;
 }
 
+export interface ActivityLog {
+  id: string;
+  project_id: string;
+  user_id: string | null;
+  action: ActivityAction;
+  detail: string | null;
+  created_at: string;
+  profile?: Profile | null;
+}
+
 export interface KpiData {
   total: number;
   in_progress: number;
@@ -43,22 +58,23 @@ export interface KpiData {
 }
 
 export const STATUS_LABELS: Record<ProjectStatus, string> = {
-  planned: "Planifié",
+  planned:     "Planifié",
   in_progress: "En cours",
-  completed: "Terminé",
-  delayed: "En retard",
+  completed:   "Terminé",
+  delayed:     "En retard",
+  suspended:   "Suspendu",
 };
 
 export const STATUS_COLORS: Record<ProjectStatus, string> = {
-  planned: "#6366f1",
+  planned:     "#6366f1",
   in_progress: "#f59e0b",
-  completed: "#10b981",
-  delayed: "#ef4444",
+  completed:   "#10b981",
+  delayed:     "#ef4444",
+  suspended:   "#94a3b8",
 };
 
 export const TYPE_LABELS: Record<ProjectType, string> = {
-  infrastructure: "Infrastructure",
-  software: "Logiciel",
-  research: "Recherche",
-  other: "Autre",
+  web:        "Application web",
+  mobile:     "Application mobile",
+  web_mobile: "Application web et mobile",
 };

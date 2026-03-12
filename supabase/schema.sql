@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS public.projects (
   name             TEXT NOT NULL,
   description      TEXT,
   status           TEXT NOT NULL DEFAULT 'planned'
-                   CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed')),
-  type             TEXT NOT NULL DEFAULT 'other'
-                   CHECK (type IN ('infrastructure', 'software', 'research', 'other')),
+                   CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed', 'suspended')),
+  type             TEXT NOT NULL DEFAULT 'web'
+                   CHECK (type IN ('web', 'mobile', 'web_mobile')),
   progress         INTEGER NOT NULL DEFAULT 0
                    CHECK (progress >= 0 AND progress <= 100),
   budget           NUMERIC(15, 2),
@@ -40,9 +40,20 @@ CREATE TABLE IF NOT EXISTS public.projects (
   start_date       DATE,
   end_date         DATE,
   owner_id         UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  github_url       TEXT,
+  gitlab_url       TEXT,
+  app_url          TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- =============================================
+-- MIGRATION: Ajouter les colonnes URL (si table déjà existante)
+-- À exécuter dans Supabase Dashboard > SQL Editor
+-- =============================================
+-- ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS github_url TEXT;
+-- ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS gitlab_url TEXT;
+-- ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS app_url TEXT;
 
 -- =============================================
 -- TABLE: project_members
@@ -183,6 +194,57 @@ CREATE POLICY "project_members_delete_admin"
   USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
+
+-- =============================================
+-- TABLE: activity_logs
+-- =============================================
+CREATE TABLE IF NOT EXISTS public.activity_logs (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  user_id     UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  action      TEXT NOT NULL
+              CHECK (action IN ('created', 'updated', 'status_change', 'comment')),
+  detail      TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_project
+  ON public.activity_logs (project_id, created_at DESC);
+
+ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
+
+-- Tout utilisateur connecté peut lire les logs
+CREATE POLICY "activity_logs_select"
+  ON public.activity_logs FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Un utilisateur connecté peut insérer ses propres logs (ou logs système sans user)
+CREATE POLICY "activity_logs_insert"
+  ON public.activity_logs FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+-- =============================================
+-- MIGRATION: Ajouter 'suspended' au statut et nouveaux types (si table déjà existante)
+-- À exécuter dans Supabase Dashboard > SQL Editor
+-- =============================================
+-- ALTER TABLE public.projects
+--   DROP CONSTRAINT IF EXISTS projects_status_check;
+-- ALTER TABLE public.projects
+--   ADD CONSTRAINT projects_status_check
+--   CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed', 'suspended'));
+
+-- -- Mettre à jour le type vers les nouvelles valeurs
+-- ALTER TABLE public.projects
+--   DROP CONSTRAINT IF EXISTS projects_type_check;
+-- ALTER TABLE public.projects
+--   ADD CONSTRAINT projects_type_check
+--   CHECK (type IN ('web', 'mobile', 'web_mobile'));
+-- -- Migrer les anciennes valeurs :
+-- UPDATE public.projects SET type = 'web'        WHERE type IN ('software', 'infrastructure');
+-- UPDATE public.projects SET type = 'mobile'     WHERE type = 'research';
+-- UPDATE public.projects SET type = 'web_mobile' WHERE type = 'other';
 
 -- =============================================
 -- INITIALISATION: Passer un compte en admin
