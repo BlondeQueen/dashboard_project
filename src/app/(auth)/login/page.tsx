@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -20,18 +20,42 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const recoverInvalidRefreshToken = async () => {
+      const supabase = createClient();
+      const { error: sessionError } = await supabase.auth.getSession();
+
+      if (
+        sessionError &&
+        /Invalid Refresh Token|Refresh Token Not Found/i.test(sessionError.message)
+      ) {
+        await supabase.auth.signOut({ scope: "local" });
+      }
+    };
+
+    recoverInvalidRefreshToken();
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError("Email ou mot de passe incorrect.");
-      setLoading(false);
-    } else {
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setError("Email ou mot de passe incorrect.");
+        setLoading(false);
+        return;
+      }
+
       router.push("/dashboard");
       router.refresh();
+    } catch {
+      setError("Session invalide détectée. Réessayez la connexion.");
+      setLoading(false);
     }
   };
 

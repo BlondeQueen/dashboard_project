@@ -6,6 +6,7 @@ import { Project, UserRole } from "@/types";
 import { Plus, FolderOpen } from "lucide-react";
 import { Suspense } from "react";
 import { getCurrentProfile } from "@/utils/get-user";
+import { isAdminRole } from "@/utils/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,7 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
             {all.length} projet{all.length !== 1 ? "s" : ""} trouvé{all.length !== 1 ? "s" : ""}
           </p>
         </div>
-        {role === "admin" && (
+        {isAdminRole(role) && (
           <Link
             href="/projects/new"
             className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-200 dark:shadow-emerald-900/40"
@@ -90,7 +91,7 @@ async function ProjectsContent({ searchParams }: { searchParams: { search?: stri
           <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
             Modifiez vos filtres ou créez un nouveau projet
           </p>
-          {role === "admin" && (
+          {isAdminRole(role) && (
             <Link
               href="/projects/new"
               className="mt-4 flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors"

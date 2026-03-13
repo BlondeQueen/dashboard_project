@@ -5,15 +5,23 @@ import UserAvatar from "@/components/ui/UserAvatar";
 import { Profile, UserRole } from "@/types";
 import { getCurrentUser, getCurrentProfile } from "@/utils/get-user";
 import { Users, ShieldCheck, Eye } from "lucide-react";
+import { isAdminRole, isSuperadmin, SUPERADMIN_EMAIL } from "@/utils/authz";
+import { updateUserCredentialsBySuperadmin } from "@/app/actions/users";
 
 export const dynamic = "force-dynamic";
 
 const ROLE_LABELS: Record<UserRole, string> = {
+  superadmin: "Superadmin",
   admin: "Administrateur",
   visitor: "Visiteur",
 };
 
-export default async function AdminUsersPage() {
+interface PageProps {
+  searchParams: Promise<{ success?: string; error?: string }>;
+}
+
+export default async function AdminUsersPage({ searchParams }: PageProps) {
+  const params = await searchParams;
   const [user, currentProfile, supabase] = await Promise.all([
     getCurrentUser(),
     getCurrentProfile(),
@@ -21,7 +29,8 @@ export default async function AdminUsersPage() {
   ]);
 
   if (!user) redirect("/login");
-  if (!currentProfile || currentProfile.role !== "admin") redirect("/dashboard");
+  if (!currentProfile || !isAdminRole(currentProfile.role)) redirect("/dashboard");
+  const currentIsSuperadmin = isSuperadmin(currentProfile.role, currentProfile.email);
 
   const { data: profiles } = await supabase
     .from("profiles")
@@ -29,6 +38,7 @@ export default async function AdminUsersPage() {
     .order("created_at");
 
   const all = (profiles as Profile[]) || [];
+  const superadmins = all.filter((p) => p.role === "superadmin" || p.email?.toLowerCase() === SUPERADMIN_EMAIL).length;
   const admins   = all.filter((p) => p.role === "admin").length;
   const visitors = all.filter((p) => p.role === "visitor").length;
 
@@ -38,6 +48,17 @@ export default async function AdminUsersPage() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Gestion des utilisateurs</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{all.length} compte{all.length !== 1 ? "s" : ""} enregistré{all.length !== 1 ? "s" : ""}</p>
       </div>
+
+      {params.success && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300">
+          {params.success}
+        </div>
+      )}
+      {params.error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-300">
+          {params.error}
+        </div>
+      )}
 
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-4">
@@ -55,8 +76,8 @@ export default async function AdminUsersPage() {
             <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 tabular-nums">{admins}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Admins</p>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 tabular-nums">{admins + superadmins}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Admins + Superadmins</p>
           </div>
         </div>
         <div className="bg-white dark:bg-[#0f1c2e] rounded-2xl card-shadow p-5 flex items-center gap-4 border border-slate-100/50 dark:border-slate-700/30">
@@ -87,6 +108,11 @@ export default async function AdminUsersPage() {
               <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">
                 Admin ?
               </th>
+              {currentIsSuperadmin && (
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 hidden xl:table-cell">
+                  Gestion accès (Superadmin)
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 dark:divide-slate-700/30">
@@ -106,12 +132,14 @@ export default async function AdminUsersPage() {
                 <td className="px-4 py-3 hidden sm:table-cell">
                   <span
                     className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold ${
-                      p.role === "admin"
+                      p.role === "superadmin"
+                        ? "bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                        : p.role === "admin"
                         ? "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400"
                         : "bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300"
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${p.role === "admin" ? "bg-emerald-500" : "bg-slate-400"}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${p.role === "superadmin" ? "bg-amber-500" : p.role === "admin" ? "bg-emerald-500" : "bg-slate-400"}`} />
                     {ROLE_LABELS[p.role]}
                   </span>
                 </td>
@@ -123,8 +151,60 @@ export default async function AdminUsersPage() {
                   })}
                 </td>
                 <td className="px-4 py-3">
-                  <RoleToggle profile={p} currentUserId={user.id} />
+                  <RoleToggle
+                    profile={p}
+                    currentUserId={user.id}
+                    canManageRoles={isAdminRole(currentProfile.role)}
+                    isProtectedSuperadmin={(p.email || "").toLowerCase() === SUPERADMIN_EMAIL}
+                  />
                 </td>
+                {currentIsSuperadmin && (
+                  <td className="px-4 py-3 hidden xl:table-cell">
+                    <form action={updateUserCredentialsBySuperadmin.bind(null, p.id)} className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          name="full_name"
+                          type="text"
+                          defaultValue={p.full_name || ""}
+                          placeholder="Nom"
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-xs"
+                        />
+                        <input
+                          name="email"
+                          type="email"
+                          defaultValue={p.email}
+                          placeholder="Email"
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-xs"
+                        />
+                        <input
+                          name="password"
+                          type="password"
+                          placeholder="Nouveau mot de passe"
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-xs"
+                        />
+                        <select
+                          name="role"
+                          defaultValue={(p.email || "").toLowerCase() === SUPERADMIN_EMAIL ? "superadmin" : p.role}
+                          disabled={(p.email || "").toLowerCase() === SUPERADMIN_EMAIL}
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-xs disabled:opacity-60"
+                        >
+                          <option value="visitor">Visiteur</option>
+                          <option value="admin">Admin</option>
+                          <option value="superadmin">Superadmin</option>
+                        </select>
+                      </div>
+                      {(p.email || "").toLowerCase() === SUPERADMIN_EMAIL && (
+                        <input type="hidden" name="role" value="superadmin" />
+                      )}
+                      <button
+                        type="submit"
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                      >
+                        Enregistrer
+                      </button>
+                    </form>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

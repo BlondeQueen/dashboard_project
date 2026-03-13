@@ -3,12 +3,13 @@ import { ArrowLeft } from "lucide-react";
 import { createResponsable } from "@/app/actions/responsables";
 import { getCurrentProfile } from "@/utils/get-user";
 import { redirect } from "next/navigation";
+import { isAdminRole } from "@/utils/authz";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewResponsablePage() {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "admin") redirect("/dashboard");
+  if (!profile || !isAdminRole(profile.role)) redirect("/dashboard");
 
   return (
     <div className="space-y-6 max-w-lg page-enter">

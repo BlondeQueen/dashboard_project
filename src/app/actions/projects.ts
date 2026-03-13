@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isAdminRole } from "@/utils/authz";
 
 async function checkAdmin() {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ async function checkAdmin() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "admin") {
+  if (!profile || !isAdminRole(profile.role)) {
     redirect("/dashboard");
   }
   return { supabase, user };

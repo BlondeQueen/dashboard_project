@@ -12,6 +12,7 @@ interface HeaderProps {
 }
 
 const ROLE_CONFIG: Record<UserRole, { label: string; dot: string; badge: string }> = {
+  superadmin: { label: "Superadmin",    dot: "bg-amber-500",   badge: "bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400" },
   admin:   { label: "Administrateur", dot: "bg-emerald-500", badge: "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400" },
   visitor: { label: "Visiteur",       dot: "bg-slate-400",   badge: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"  },
 };

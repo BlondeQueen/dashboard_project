@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/types";
-import { LayoutDashboard, FolderKanban, Users, UserCircle, X } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Users, UserCircle, Settings, X } from "lucide-react";
 
 interface SidebarProps {
   role: UserRole;
@@ -17,25 +17,31 @@ const navItems = [
     href: "/dashboard",
     label: "Tableau de bord",
     icon: LayoutDashboard,
-    roles: ["admin", "visitor"] as UserRole[],
+    roles: ["superadmin", "admin", "visitor"] as UserRole[],
   },
   {
     href: "/projects",
     label: "Projets",
     icon: FolderKanban,
-    roles: ["admin", "visitor"] as UserRole[],
+    roles: ["superadmin", "admin", "visitor"] as UserRole[],
+  },
+  {
+    href: "/users",
+    label: "Mon compte",
+    icon: Settings,
+    roles: ["superadmin", "admin", "visitor"] as UserRole[],
   },
   {
     href: "/admin/users",
     label: "Utilisateurs",
     icon: Users,
-    roles: ["admin"] as UserRole[],
+    roles: ["superadmin", "admin"] as UserRole[],
   },
   {
     href: "/admin/responsables",
     label: "Responsables",
     icon: UserCircle,
-    roles: ["admin"] as UserRole[],
+    roles: ["superadmin", "admin"] as UserRole[],
   },
 ];
 

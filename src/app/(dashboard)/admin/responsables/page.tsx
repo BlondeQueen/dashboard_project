@@ -5,6 +5,7 @@ import { Responsable } from "@/types";
 import { deleteResponsable } from "@/app/actions/responsables";
 import { UserCircle, Plus, Pencil, Trash2, Mail, Phone, Briefcase } from "lucide-react";
 import { getCurrentProfile } from "@/utils/get-user";
+import { isAdminRole } from "@/utils/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ async function DeleteButton({ id }: { id: string }) {
 
 export default async function ResponsablesPage() {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "admin") redirect("/dashboard");
+  if (!profile || !isAdminRole(profile.role)) redirect("/dashboard");
 
   const supabase = await createClient();
   const { data } = await supabase

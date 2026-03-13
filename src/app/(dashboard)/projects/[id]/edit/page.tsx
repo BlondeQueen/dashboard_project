@@ -4,6 +4,7 @@ import Link from "next/link";
 import ProjectForm from "@/components/projects/ProjectForm";
 import { updateProject } from "@/app/actions/projects";
 import { ArrowLeft } from "lucide-react";
+import { isAdminRole } from "@/utils/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function EditProjectPage({ params }: PageProps) {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "admin") redirect("/projects");
+  if (!profile || !isAdminRole(profile.role)) redirect("/projects");
 
   const [{ data: project }, { data: responsables }] = await Promise.all([
     supabase.from("projects").select("*").eq("id", id).single(),

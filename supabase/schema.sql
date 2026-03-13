@@ -18,9 +18,17 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email       TEXT NOT NULL,
   full_name   TEXT,
   role        TEXT NOT NULL DEFAULT 'visitor'
-              CHECK (role IN ('admin', 'visitor')),
+              CHECK (role IN ('superadmin', 'admin', 'visitor')),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- =============================================
+-- MIGRATION: activer le rôle superadmin (si table existante)
+-- =============================================
+-- ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+-- ALTER TABLE public.profiles
+--   ADD CONSTRAINT profiles_role_check CHECK (role IN ('superadmin', 'admin', 'visitor'));
+-- UPDATE public.profiles SET role = 'superadmin' WHERE email = 'admin@qps.net';
 
 -- =============================================
 -- TABLE: responsables
@@ -45,19 +53,19 @@ DROP POLICY IF EXISTS "responsables_insert_admin" ON public.responsables;
 CREATE POLICY "responsables_insert_admin"
   ON public.responsables FOR INSERT
   TO authenticated
-  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin')));
 
 DROP POLICY IF EXISTS "responsables_update_admin" ON public.responsables;
 CREATE POLICY "responsables_update_admin"
   ON public.responsables FOR UPDATE
   TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin')));
 
 DROP POLICY IF EXISTS "responsables_delete_admin" ON public.responsables;
 CREATE POLICY "responsables_delete_admin"
   ON public.responsables FOR DELETE
   TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin')));
 
 -- =============================================
 -- TABLE: projects
@@ -173,7 +181,7 @@ CREATE POLICY "profiles_update_admin"
   ON public.profiles FOR UPDATE
   TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin'))
   );
 
 -- ----------------------------
@@ -193,7 +201,7 @@ CREATE POLICY "projects_insert_admin"
   ON public.projects FOR INSERT
   TO authenticated
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin'))
   );
 
 -- Seuls les admins peuvent modifier un projet
@@ -202,7 +210,7 @@ CREATE POLICY "projects_update_admin"
   ON public.projects FOR UPDATE
   TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin'))
   );
 
 -- Seuls les admins peuvent supprimer un projet
@@ -211,7 +219,7 @@ CREATE POLICY "projects_delete_admin"
   ON public.projects FOR DELETE
   TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin'))
   );
 
 -- ----------------------------
@@ -231,7 +239,7 @@ CREATE POLICY "project_members_insert_admin"
   ON public.project_members FOR INSERT
   TO authenticated
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin'))
   );
 
 -- Seuls les admins peuvent supprimer des membres
@@ -240,7 +248,7 @@ CREATE POLICY "project_members_delete_admin"
   ON public.project_members FOR DELETE
   TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin'))
   );
 
 -- =============================================

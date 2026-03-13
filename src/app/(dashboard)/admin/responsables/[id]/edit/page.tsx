@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { updateResponsable } from "@/app/actions/responsables";
 import { getCurrentProfile } from "@/utils/get-user";
 import { Responsable } from "@/types";
+import { isAdminRole } from "@/utils/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function EditResponsablePage({ params }: PageProps) {
   const { id } = await params;
 
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "admin") redirect("/dashboard");
+  if (!profile || !isAdminRole(profile.role)) redirect("/dashboard");
 
   const supabase = await createClient();
   const { data } = await supabase

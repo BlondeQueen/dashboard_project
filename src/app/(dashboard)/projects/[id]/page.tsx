@@ -8,6 +8,7 @@ import ActivityFeed from "@/components/projects/ActivityFeed";
 import { Project, UserRole, TYPE_LABELS, ActivityLog } from "@/types";
 import { ArrowLeft, Edit, Github, Globe, Calendar, User, Layers } from "lucide-react";
 import { getCurrentProfile } from "@/utils/get-user";
+import { isAdminRole } from "@/utils/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +83,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </span>
 
           {/* Admin actions pushed right */}
-          {role === "admin" && (
+          {isAdminRole(role) && (
             <div className="ml-auto flex items-center gap-2">
               <Link
                 href={`/projects/${p.id}/edit`}

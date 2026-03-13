@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "visitor";
+export type UserRole = "superadmin" | "admin" | "visitor";
 
 export type ProjectStatus = "planned" | "in_progress" | "completed" | "delayed" | "suspended";
 
