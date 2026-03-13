@@ -208,3 +208,98 @@ export async function updateUserCredentialsBySuperadmin(
   revalidatePath("/dashboard");
   redirect(withMessage("/admin/users", "success", "Compte utilisateur mis à jour"));
 }
+
+export async function createUserBySuperadmin(formData: FormData): Promise<void> {
+  const { supabase, profile } = await getActorProfile();
+
+  if (!profile || !isSuperadmin(profile.role, profile.email)) {
+    redirect(withMessage("/admin/users", "error", "Seul le superadmin peut créer des utilisateurs"));
+  }
+
+  const fullName = ((formData.get("full_name") as string) || "").trim();
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const password = ((formData.get("password") as string) || "").trim();
+  const role = ((formData.get("role") as UserRole) || "visitor") as UserRole;
+
+  if (!email || !password) {
+    redirect(withMessage("/admin/users", "error", "Email et mot de passe sont obligatoires"));
+  }
+
+  if (password.length < 8) {
+    redirect(withMessage("/admin/users", "error", "Le mot de passe doit contenir au moins 8 caractères"));
+  }
+
+  if (!["visitor", "admin", "superadmin"].includes(role)) {
+    redirect(withMessage("/admin/users", "error", "Rôle invalide"));
+  }
+
+  const finalRole: UserRole = email === SUPERADMIN_EMAIL ? "superadmin" : role;
+  const adminClient = createAdminClient();
+
+  const { data: created, error: createError } = await adminClient.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: fullName ? { full_name: fullName } : undefined,
+  });
+
+  if (createError || !created.user) {
+    redirect(withMessage("/admin/users", "error", createError?.message || "Création impossible"));
+  }
+
+  const displayName = fullName || email.split("@")[0];
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      email,
+      full_name: displayName,
+      role: finalRole,
+    })
+    .eq("id", created.user.id);
+
+  if (profileError) {
+    await adminClient.auth.admin.deleteUser(created.user.id);
+    redirect(withMessage("/admin/users", "error", profileError.message));
+  }
+
+  revalidatePath("/admin/users");
+  revalidatePath("/dashboard");
+  redirect(withMessage("/admin/users", "success", "Utilisateur créé"));
+}
+
+export async function deleteUserBySuperadmin(userId: string): Promise<void> {
+  const { supabase, user, profile } = await getActorProfile();
+
+  if (!profile || !isSuperadmin(profile.role, profile.email)) {
+    redirect(withMessage("/admin/users", "error", "Seul le superadmin peut supprimer des utilisateurs"));
+  }
+
+  if (userId === user.id) {
+    redirect(withMessage("/admin/users", "error", "Vous ne pouvez pas supprimer votre propre compte"));
+  }
+
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", userId)
+    .single();
+
+  if (!target) {
+    redirect(withMessage("/admin/users", "error", "Utilisateur introuvable"));
+  }
+
+  if ((target.email || "").toLowerCase() === SUPERADMIN_EMAIL) {
+    redirect(withMessage("/admin/users", "error", "Le superadmin protégé ne peut pas être supprimé"));
+  }
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient.auth.admin.deleteUser(userId);
+
+  if (error) {
+    redirect(withMessage("/admin/users", "error", error.message));
+  }
+
+  revalidatePath("/admin/users");
+  revalidatePath("/dashboard");
+  redirect(withMessage("/admin/users", "success", "Utilisateur supprimé"));
+}

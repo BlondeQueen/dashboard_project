@@ -6,7 +6,11 @@ import { Profile, UserRole } from "@/types";
 import { getCurrentUser, getCurrentProfile } from "@/utils/get-user";
 import { Users, ShieldCheck, Eye } from "lucide-react";
 import { isAdminRole, isSuperadmin, SUPERADMIN_EMAIL } from "@/utils/authz";
-import { updateUserCredentialsBySuperadmin } from "@/app/actions/users";
+import {
+  createUserBySuperadmin,
+  deleteUserBySuperadmin,
+  updateUserCredentialsBySuperadmin,
+} from "@/app/actions/users";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +61,62 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
       {params.error && (
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-300">
           {params.error}
+        </div>
+      )}
+
+      {currentIsSuperadmin && (
+        <div className="bg-white dark:bg-[#0f1c2e] rounded-2xl card-shadow border border-slate-100/50 dark:border-slate-700/30 p-4">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Créer un utilisateur</h2>
+          <form action={createUserBySuperadmin} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
+            <div className="md:col-span-1">
+              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Nom</label>
+              <input
+                name="full_name"
+                type="text"
+                placeholder="Nom complet"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-sm"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Email</label>
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="utilisateur@domaine.com"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-sm"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Mot de passe</label>
+              <input
+                name="password"
+                type="password"
+                required
+                minLength={8}
+                placeholder="8 caractères minimum"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-sm"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Rôle</label>
+              <select
+                name="role"
+                defaultValue="visitor"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-sm"
+              >
+                <option value="visitor">Visiteur</option>
+                <option value="admin">Admin</option>
+                <option value="superadmin">Superadmin</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="md:col-span-1 h-10 px-4 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            >
+              Créer
+            </button>
+          </form>
         </div>
       )}
 
@@ -203,6 +263,16 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                         Enregistrer
                       </button>
                     </form>
+                    {(p.email || "").toLowerCase() !== SUPERADMIN_EMAIL && p.id !== user.id && (
+                      <form action={deleteUserBySuperadmin.bind(null, p.id)} className="mt-2">
+                        <button
+                          type="submit"
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition-colors"
+                        >
+                          Supprimer
+                        </button>
+                      </form>
+                    )}
                   </td>
                 )}
               </tr>
